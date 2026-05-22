@@ -423,10 +423,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   
     // FILTRAR MESAS - usa la variable de instancia searchMesas
-    // final filteredMesas = mesas.where((c) {
-    //   final matchSearch = c.numero.toLowerCase().contains(searchMesas.toLowerCase());
-    //   return matchSearch;
-    // }).toList();
+    final filteredMesas = mesas.where((c) {
+      final matchSearch = c.name?.toLowerCase().contains(searchMesas.toLowerCase());
+      return matchSearch ?? false;
+    }).toList();
 
     return _darkCard(
       child: Column(
@@ -490,8 +490,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
           const SizedBox(height: 10),
           Text(
-            // "${mesas.length} mesas en total • ${mesas.where((m) => m.activo).length} activas",
-            "${mesas.length} mesas en total",
+            "${mesas.length} mesas en total • ${mesas.where((m) => m.activo).length} activas",
+            // "${mesas.length} mesas en total",
             style: const TextStyle(color: Colors.white70),
           )
         ],
@@ -704,7 +704,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             icon: const Icon(Icons.delete, color: Colors.redAccent),
             onPressed: () {
               ref.read(selectedCategoryProvider.notifier).state = categoria;
-              _confirmarEliminar();
+              _confirmarEliminar('Categoría');
             },
           ),
         ],
@@ -713,7 +713,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
   
   Widget _MesasTile(TableModel mesa, Color color) {
-    // final loading = ref.watch(categoryLoadingProvider(mesa.id));
+    final loading = ref.watch(categoryLoadingProvider(mesa.id));
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -748,32 +748,39 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             '${mesa.name}',
             style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 12),
+          Icon(Icons.people, color: Colors.white54),
+          const SizedBox(width: 4),
           Text(
             mesa.maximumCapacity == 1 
               ? '${mesa.maximumCapacity} persona' 
               : '${mesa.maximumCapacity} personas',
             style: TextStyle(color: Colors.white70)
           ),
+          const SizedBox(width: 12),
+          Text(
+            mesa.status.toString().split('.').last.toUpperCase(),
+            style: TextStyle(color: Colors.white70)
+          ),
           const Spacer(),
           Switch(
             value: mesa.activo ?? false,
             onChanged: 
-            // loading
-            //   ? null
-            //   : 
+            loading
+              ? null
+              : 
               (value) {
-                // ref.read(categoryProvider.notifier)
-                //   .toggleActivo(toString(mesa.id), value, context);
+                ref.read(tableProvider.notifier)
+                  .toggleActivo(mesa.id, value, context);
               },
             activeColor: Colors.amber,
           ),
           IconButton(
             onPressed: () {
-              // ref.read(selectedCategoryProvider.notifier).state = mesa;
+              ref.read(selectedTableProvider.notifier).state = mesa;
               showSidePanel(
                 context,
-                const NewCategoryForm(),
+                const NewTableForm(),
               );
             },
             icon: const Icon(Icons.edit, color: Colors.white54)
@@ -782,8 +789,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             tooltip: 'Eliminar mesa',
             icon: const Icon(Icons.delete, color: Colors.redAccent),
             onPressed: () {
-              // ref.read(selectedCategoryProvider.notifier).state = mesa;
-              _confirmarEliminar();
+              ref.read(selectedTableProvider.notifier).state = mesa;
+              _confirmarEliminar('Mesa');
             },
           ),
         ],
@@ -828,7 +835,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
-  Future<void> _confirmarEliminar() async {
+  Future<void> _confirmarEliminar(String tipo) async {
     final confirm = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
@@ -841,8 +848,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               Text('Confirmar eliminación'),
             ],
           ),
-          content: const Text(
-            '¿Estás seguro de eliminar esta Categoria?\n\nEsta acción no se puede deshacer.',
+          content: Text(
+            '¿Estás seguro de eliminar esta $tipo?\n\nEsta acción no se puede deshacer.',
           ),
           actions: [
             TextButton(
@@ -860,7 +867,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
 
     if (confirm == true) {
-      _eliminarCategoria();
+      if (tipo == 'Categoría') {
+        _eliminarCategoria();
+      } else if (tipo == 'Mesa') {
+        _eliminarMesa();
+      }
     } else {
       ref.read(selectedCategoryProvider.notifier).state = null;
     }
@@ -886,6 +897,30 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (success) {
       ref.invalidate(categoryProvider);
       ref.read(selectedCategoryProvider.notifier).state = null;
+      context.go('/admin/settings');
+    }
+  }
+
+  Future<void> _eliminarMesa() async {
+    final provider = ref.read(mesasProvider);
+    final mesaDelete = ref.read(selectedTableProvider);
+
+    if (mesaDelete == null) return;
+
+    final success = await provider.eliminarMesa(mesaDelete.id);
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(success ? 'Mesa eliminada' : provider.error ?? 'Error'),
+        backgroundColor: success ? Colors.green : Colors.red,
+      ),
+    );
+
+    if (success) {
+      ref.invalidate(tableProvider);
+      ref.read(selectedTableProvider.notifier).state = null;
       context.go('/admin/settings');
     }
   }

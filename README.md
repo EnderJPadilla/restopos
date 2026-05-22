@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║                                                                              ║
 ║              🎉  PROYECTO COMPLETADO: RestoPOS API Integration  🎉           ║
@@ -330,3 +331,6 @@ Proyecto completado exitosamente ✨
 
 RestoPOS API Integration v1.0
 Enero 2026
+=======
+# restopos
+>>>>>>> 8116ac9c36e16c2267a4e38af8d2321bdb71a886

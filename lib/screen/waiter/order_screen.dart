@@ -178,7 +178,9 @@ class _PedidoScreenState extends ConsumerState<PedidoScreen> {
                             id: "temp_table",
                             number: 0, 
                             maximumCapacity: 0, 
-                            status: TableStatus.disponible
+                            status: TableStatus.disponible,
+                            activo: true,
+                            booking: false
                           ),
                         carrito: carrito,
                         cambiarCantidad: cambiarCantidad,

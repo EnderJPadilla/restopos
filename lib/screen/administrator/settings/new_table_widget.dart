@@ -18,7 +18,7 @@ class _NewTableFormState extends ConsumerState<NewTableForm> {
   
   String _text(String? v) => v ?? '';
 
-  int number = 0;
+  // int number = 0;
   final numberController = TextEditingController();
   final nameController = TextEditingController();
   final maximumCapacity = TextEditingController();
@@ -26,9 +26,9 @@ class _NewTableFormState extends ConsumerState<NewTableForm> {
   bool activo = true;
   bool booking = true;
   bool _isValidatingTable = false;
+  String _lastValidatedNumber = '';
   final FocusNode _NumberFocusNode = FocusNode();
   final FocusNode _NameFocusNode = FocusNode();
-  String _lastValidatedNumber = '';
   
   // modo editar
   bool isEditMode = false;
@@ -87,6 +87,7 @@ class _NewTableFormState extends ConsumerState<NewTableForm> {
     numberController.clear();
     nameController.clear();
     maximumCapacity.text = '0';
+    status = TableStatus.disponible;
     activo = true;
     booking = true;
     // Edit mode
@@ -98,9 +99,10 @@ class _NewTableFormState extends ConsumerState<NewTableForm> {
   void _cargarFrom(table) {
     isEditMode = true;
     tableId = table.id;
-    nameController.text = _text(table.nombre);
-    numberController.text = _text(table.numero?.toString());
-    maximumCapacity.text = _text(table.habilidad?.toString());
+    nameController.text = _text(table.name);
+    numberController.text = _text(table.number?.toString());
+    maximumCapacity.text = _text(table.maximumCapacity?.toString());
+    status = table.status;
     activo = table.activo;
     booking = table.booking ?? true;
     setState(() {});
@@ -260,7 +262,7 @@ class _NewTableFormState extends ConsumerState<NewTableForm> {
               onChanged: (v) => setState(() => booking = v),
               activeColor: const Color(0xFFE49E22),
               title: const Text(
-                'Estado',
+                'Reservas',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: Colors.white,

@@ -39,6 +39,8 @@ class _TableScreenState extends State<TableScreen> {
           name: "Preparando",
           maximumCapacity: 2,
           status: TableStatus.ocupada,
+          activo: true,
+          booking: false,
         );
       }
 
@@ -49,6 +51,8 @@ class _TableScreenState extends State<TableScreen> {
           maximumCapacity: 4,
           status: TableStatus.ocupada,
           name: "Listo",
+          activo: true,
+          booking: false,
         );
       }
 
@@ -59,6 +63,8 @@ class _TableScreenState extends State<TableScreen> {
           maximumCapacity: 6,
           status: TableStatus.ocupada,
           name: "Registrado",
+          activo: true,
+          booking: false,
         );
       }
 
@@ -69,6 +75,8 @@ class _TableScreenState extends State<TableScreen> {
           maximumCapacity: 6,
           status: TableStatus.reservada,
           name: "Reservada",
+          activo: true,
+          booking: false,
         );
       }
 
@@ -77,6 +85,8 @@ class _TableScreenState extends State<TableScreen> {
         number: i + 1,
         maximumCapacity: (i % 4) + 2,
         status: TableStatus.disponible,
+        activo: true,
+        booking: false,
       );
     });
 

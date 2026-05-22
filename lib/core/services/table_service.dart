@@ -177,7 +177,15 @@ class TableService {
         );
       }
 
-      return response.data["mesa"]["mensaje"] as String;
+      final msg = response.data["mesa"]["mensaje"] as String;
+      if (msg == null) {
+        throw Exception('Respuesta inesperada del servidor');
+      } else if (msg != 'Mesa actualizada correctamente.') {
+        throw Exception(msg);
+      }
+      return msg;
+
+      // return response.data["mesa"]["mensaje"] as String;
 
     } on DioException catch (e) {
       throw _handleDioError(e);

@@ -7,8 +7,8 @@ class TableModel {
   final String? name;
   final int maximumCapacity;
   final TableStatus status;
-  final bool? activo;
-  final bool? booking;
+  final bool activo;
+  final bool booking;
 
   TableModel({
     required this.id,
@@ -16,8 +16,8 @@ class TableModel {
     this.name,
     required this.maximumCapacity,
     required this.status,
-    this.activo,
-    this.booking,
+    required this.activo,
+    required this.booking,
   });
 
   TableModel copyWith({
