@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'package:restopos/models/table_model.dart';
+
 import 'package:restopos/providers/order_provider.dart';
+import 'package:restopos/providers/table_provider.dart';
+
 import 'package:restopos/screen/waiter/abrir_mesa_modal.dart';
 
 class AppColors {
@@ -19,76 +23,78 @@ class AppColors {
   static const greySoft = Color(0xFF1C2433);
 }
 
-class TableScreen extends StatefulWidget {
+class TableScreen extends ConsumerStatefulWidget {
   const TableScreen({super.key});
 
   @override
-  State<TableScreen> createState() => _TableScreenState();
+  ConsumerState<TableScreen> createState() => _TableScreenState();
 }
 
-class _TableScreenState extends State<TableScreen> {
+class _TableScreenState extends ConsumerState<TableScreen> {
   TableStatus? _filterStatus;
 
   @override
   Widget build(BuildContext context) {
-    final allTables = List.generate(12, (i) {
-      if (i == 2) {
-        return TableModel(
-          id: "table_3",
-          number: 3,
-          name: "Preparando",
-          maximumCapacity: 2,
-          status: TableStatus.ocupada,
-          activo: true,
-          booking: false,
-        );
-      }
+    final mesas = ref.watch(mesasListadas);
+    final allTables = mesas;
+    // final allTables = List.generate(12, (i) {
+    //   if (i == 2) {
+    //     return TableModel(
+    //       id: "table_3",
+    //       number: 3,
+    //       name: "Preparando",
+    //       maximumCapacity: 2,
+    //       status: TableStatus.ocupada,
+    //       activo: true,
+    //       booking: false,
+    //     );
+    //   }
 
-      if (i == 5) {
-        return TableModel(
-          id: "table_6",
-          number: 6,
-          maximumCapacity: 4,
-          status: TableStatus.ocupada,
-          name: "Listo",
-          activo: true,
-          booking: false,
-        );
-      }
+    //   if (i == 5) {
+    //     return TableModel(
+    //       id: "table_6",
+    //       number: 6,
+    //       maximumCapacity: 4,
+    //       status: TableStatus.ocupada,
+    //       name: "Listo",
+    //       activo: true,
+    //       booking: false,
+    //     );
+    //   }
 
-      if (i == 8) {
-        return TableModel(
-          id: "table_9",
-          number: 9,
-          maximumCapacity: 6,
-          status: TableStatus.ocupada,
-          name: "Registrado",
-          activo: true,
-          booking: false,
-        );
-      }
+    //   if (i == 8) {
+    //     return TableModel(
+    //       id: "table_9",
+    //       number: 9,
+    //       maximumCapacity: 6,
+    //       status: TableStatus.ocupada,
+    //       name: "Registrado",
+    //       activo: true,
+    //       booking: false,
+    //     );
+    //   }
 
-      if (i == 10) {
-        return TableModel(
-          id: "table_11",
-          number: 11,
-          maximumCapacity: 6,
-          status: TableStatus.reservada,
-          name: "Reservada",
-          activo: true,
-          booking: false,
-        );
-      }
+    //   if (i == 10) {
+    //     return TableModel(
+    //       id: "table_11",
+    //       number: 11,
+    //       maximumCapacity: 6,
+    //       status: TableStatus.reservada,
+    //       name: "Reservada",
+    //       activo: true,
+    //       booking: false,
+    //     );
+    //   }
 
-      return TableModel(
-        id: "table_${i + 1}",
-        number: i + 1,
-        maximumCapacity: (i % 4) + 2,
-        status: TableStatus.disponible,
-        activo: true,
-        booking: false,
-      );
-    });
+    //   return TableModel(
+    //     id: "table_${i + 1}",
+    //     number: i + 1,
+    //     maximumCapacity: (i % 4) + 2,
+    //     status: TableStatus.disponible,
+    //     activo: true,
+    //     booking: false,
+    //   );
+    // });
 
     final availableCount = allTables.where((t) => t.status == TableStatus.disponible).length;
     final occupiedCount = allTables.where((t) => t.status == TableStatus.ocupada).length;

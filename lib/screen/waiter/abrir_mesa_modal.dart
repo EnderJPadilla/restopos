@@ -30,15 +30,15 @@ class _AbrirMesaModalState extends State<AbrirMesaModal>
   }
 
   void actualizarCantidad(int nuevaCantidad) {
-    if (nuevaCantidad < 1 ||
-        nuevaCantidad > widget.mesa.maximumCapacity) return;
+    if (nuevaCantidad < 1 || nuevaCantidad > widget.mesa.maximumCapacity) return;
 
     if (nuevaCantidad > cantidad) {
       // AGREGAR
       controllers.add(TextEditingController());
       errores.add(false);
       _listKey.currentState?.insertItem(cantidad,
-        duration: const Duration(milliseconds: 300));
+        duration: const Duration(milliseconds: 300)
+      );
     } else {
       // ELIMINAR
       final removedController = controllers.removeLast();

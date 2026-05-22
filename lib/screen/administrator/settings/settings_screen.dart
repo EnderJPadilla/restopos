@@ -44,6 +44,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   
   // filtro de búsqueda para categorías
   String searchMesas = "";
+  String searchCategoria = "";
 
   // Mesas
   final TextEditingController searchController = TextEditingController();
@@ -335,9 +336,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       );
     }
   
-    // FILTRAR CATEGORIAS - usa la variable de instancia searchMesas
+    // FILTRAR CATEGORIAS - usa la variable de instancia searchCategoria
     final filteredCategory = categorias.where((c) {
-      final matchSearch = c.nombre.toLowerCase().contains(searchMesas.toLowerCase());
+      final matchSearch = c.nombre.toLowerCase().contains(searchCategoria.toLowerCase());
       return matchSearch;
     }).toList();
 
@@ -368,7 +369,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
           const SizedBox(height: 15),
           TextField(
-            onChanged: (value) => setState(() => searchMesas = value),
+            onChanged: (value) => setState(() => searchCategoria = value),
             style: const TextStyle(color: Colors.white),
             decoration: InputDecoration(
               hintText: "Buscar categoría...",
@@ -473,15 +474,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           
           const SizedBox(height: 15),
 
-          // if (filteredMesas.isEmpty)
-          if (mesas.isEmpty)
+          // if (mesas.isEmpty)
+          if (filteredMesas.isEmpty)
             const Center(
               child: Text("Sin mesas",
               style: TextStyle(color: Colors.white54)),
             )
           else
-            // ...filteredMesas.map((mesa) {
-            ...mesas.map((mesa) {
+            ...filteredMesas.map((mesa) {
+            // ...mesas.map((mesa) {
               return _MesasTile(
                 mesa,
                 getRandomColor(),

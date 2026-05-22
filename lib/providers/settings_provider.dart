@@ -34,6 +34,7 @@ class settingNotifier extends StateNotifier<List<Setting>> {
     } catch (e) {
       state = [];
     }
+    
   }
 
 }

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:restopos/core/utils/product_icon_mapper.dart';
 
+import 'package:restopos/providers/table_provider.dart';
 import 'package:restopos/providers/order_provider.dart';
 import 'package:restopos/providers/product_provider.dart';
 import 'package:restopos/providers/menu_provider.dart';
@@ -58,6 +59,9 @@ class _PedidoScreenState extends ConsumerState<PedidoScreen> {
   double get iva => subtotal * 0.16;
   double get propina => subtotal * 0.1;
   double get total => subtotal + iva + propina;
+
+  // controla si los campos de configuración están en modo edición
+  bool editConfig = false;
 
   List<String> get categorias => ref.watch(categoriasProvider);
   List<Producto> get productos => ref.watch(productosfiltradosProvider);
@@ -717,7 +721,10 @@ class _PedidoScreenState extends ConsumerState<PedidoScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
-            onPressed: () { },
+            onPressed: () {
+              // Enviar pedido a cocina
+              _guardarPedido();
+            },
             icon: const Icon(Icons.publish),
             label: const Text("Enviar a Cocina"),
           ),
@@ -750,6 +757,46 @@ class _PedidoScreenState extends ConsumerState<PedidoScreen> {
         )
       ],
     );
+  }
+
+
+  // Guardar pedido
+  Future<void> _guardarPedido() async {
+    // if (!_formKey.currentState!.validate()) return;
+    final provider = ref.read(orderProvider);
+
+    final payload = {
+      "id": '',
+      "mesaId": mesaSeleccionada != null ? mesaSeleccionada.id : 'temp_table',
+      "numeroPersonas": mesaSeleccionada != null ? mesaSeleccionada.maximumCapacity : 0,
+      "items": carrito.map((item) => {
+        "productoId": item.producto.id,
+        "cantidad": item.cantidad,
+        "notas": item.notasController.text.trim(),
+      }).toList(),
+      "subtotal": subtotal,
+      "iva": iva,
+      "propina": propina,
+      // "descuentos": descuentosController,
+      "total": total,
+    };
+
+    final success = await provider.guardarPedidos(payload);
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(success ? 'Pedido guardado correctamente' : provider.error ?? 'Error'),
+        backgroundColor: success ? Colors.green : Colors.red,
+      ),
+    );
+
+    if (success) {
+      editConfig = false;
+      setState(() {});
+    }
+
   }
 
 
