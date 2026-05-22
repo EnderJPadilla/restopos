@@ -733,14 +733,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             child: Center(
               child: mesa.number != null 
-                ? Text(
-                  mesa.number.toString(),
-                  style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)
-                )
-                : Text(
-                  '?',
-                  style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)
-                )
+              ? Text(
+                mesa.number.toString(),
+                style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)
+              )
+              : Text(
+                '?',
+                style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)
+              )
             ),
           ),
           const SizedBox(width: 12),
