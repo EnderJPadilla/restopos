@@ -1,3 +1,4 @@
+import 'package:restopos/models/order_model.dart';
 
 enum TableStatus { disponible, ocupada, reservada }
 
@@ -9,6 +10,7 @@ class TableModel {
   final TableStatus status;
   final bool activo;
   final bool booking;
+  final List<Order>? pedido;
 
   TableModel({
     required this.id,
@@ -18,6 +20,7 @@ class TableModel {
     required this.status,
     required this.activo,
     required this.booking,
+    this.pedido,
   });
 
   TableModel copyWith({
@@ -28,6 +31,7 @@ class TableModel {
     TableStatus? status,
     bool? activo,
     bool? booking,
+    List<Order>? pedido,
   }) {
     return TableModel(
       id: id ?? this.id,
@@ -37,6 +41,7 @@ class TableModel {
       status: status ?? this.status,
       activo: activo ?? this.activo,
       booking: booking ?? this.booking,
+      pedido: pedido ?? this.pedido,
     );
   }
 
@@ -55,12 +60,15 @@ class TableModel {
       name: json["nombre"],
       maximumCapacity: json["capacidad"],
       status: json["estatus"] == "disponible"
-          ? TableStatus.disponible
-          : json["estatus"] == "ocupada"
-              ? TableStatus.ocupada
-              : TableStatus.reservada,
+        ? TableStatus.disponible
+        : json["estatus"] == "ocupada"
+          ? TableStatus.ocupada
+          : TableStatus.reservada,
       activo: json["activo"] ?? false,
-      booking: json["booking"] ?? false
+      booking: json["booking"] ?? false,
+      pedido: json["pedido_activo"] != null
+        ? (json["pedido_activo"] as List).map((e) => Order.fromJson(e)).toList()
+        : null
     );
   }
 

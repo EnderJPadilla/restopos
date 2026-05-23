@@ -37,64 +37,6 @@ class _TableScreenState extends ConsumerState<TableScreen> {
   Widget build(BuildContext context) {
     final mesas = ref.watch(mesasListadas);
     final allTables = mesas;
-    // final allTables = List.generate(12, (i) {
-    //   if (i == 2) {
-    //     return TableModel(
-    //       id: "table_3",
-    //       number: 3,
-    //       name: "Preparando",
-    //       maximumCapacity: 2,
-    //       status: TableStatus.ocupada,
-    //       activo: true,
-    //       booking: false,
-    //     );
-    //   }
-
-    //   if (i == 5) {
-    //     return TableModel(
-    //       id: "table_6",
-    //       number: 6,
-    //       maximumCapacity: 4,
-    //       status: TableStatus.ocupada,
-    //       name: "Listo",
-    //       activo: true,
-    //       booking: false,
-    //     );
-    //   }
-
-    //   if (i == 8) {
-    //     return TableModel(
-    //       id: "table_9",
-    //       number: 9,
-    //       maximumCapacity: 6,
-    //       status: TableStatus.ocupada,
-    //       name: "Registrado",
-    //       activo: true,
-    //       booking: false,
-    //     );
-    //   }
-
-    //   if (i == 10) {
-    //     return TableModel(
-    //       id: "table_11",
-    //       number: 11,
-    //       maximumCapacity: 6,
-    //       status: TableStatus.reservada,
-    //       name: "Reservada",
-    //       activo: true,
-    //       booking: false,
-    //     );
-    //   }
-
-    //   return TableModel(
-    //     id: "table_${i + 1}",
-    //     number: i + 1,
-    //     maximumCapacity: (i % 4) + 2,
-    //     status: TableStatus.disponible,
-    //     activo: true,
-    //     booking: false,
-    //   );
-    // });
 
     final availableCount = allTables.where((t) => t.status == TableStatus.disponible).length;
     final occupiedCount = allTables.where((t) => t.status == TableStatus.ocupada).length;
@@ -402,7 +344,7 @@ class TableCard extends ConsumerWidget {
                   )
                 ],
               ),
-              if (table.name != null) ...[
+              if (table.status != TableStatus.disponible) ...[
                 const SizedBox(height: 12),
                 FractionallySizedBox(
                   widthFactor: 0.9,
@@ -415,14 +357,14 @@ class TableCard extends ConsumerWidget {
                     ),
                     child: Center(
                       child: Text(
-                        table.name!,
+                        table.pedido != null ? table.pedido![0].estado : "Reservada",
                         style: TextStyle(color: borderColor, fontSize: 12),
                       ),
                     )
                   ),
                 ),
               ],
-              // if (table.time != null) ...[
+              // if (table.status == TableStatus.reservada) ...[
               //   const SizedBox(height: 8),
               //   Row(
               //     mainAxisAlignment: MainAxisAlignment.center,
@@ -432,8 +374,7 @@ class TableCard extends ConsumerWidget {
               //       const SizedBox(width: 4),
               //       Text(
               //         table.time!,
-              //         style:
-              //           const TextStyle(color: Colors.white38, fontSize: 12),
+              //         style: const TextStyle(color: Colors.white38, fontSize: 12),
               //       )
               //     ],
               //   )

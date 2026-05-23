@@ -10,11 +10,15 @@ import 'package:restopos/providers/table_provider.dart';
 import 'package:restopos/providers/order_provider.dart';
 import 'package:restopos/providers/product_provider.dart';
 import 'package:restopos/providers/menu_provider.dart';
+import 'package:restopos/providers/settings_provider.dart';
 
 import 'package:restopos/models/table_model.dart';
 import 'package:restopos/models/product_model.dart';
+import 'package:restopos/models/settings_model.dart';
+import 'package:restopos/models/order_model.dart';
 
 import 'package:restopos/screen/waiter/carrito_screen.dart';
+import 'package:restopos/screen/waiter/confirmar_pedido_modal.dart';
 
 class AppColors {
   static const background = Color(0xFF05080B);
@@ -54,22 +58,27 @@ class _PedidoScreenState extends ConsumerState<PedidoScreen> {
   final TextEditingController searchController = TextEditingController();
   dynamic mesaSeleccionada = null;
   dynamic mesaOrder = null;
-  // final dynamic mesaOrder = null;
+  dynamic usuarioId = null;
+  // dynamic configuraciones = null;
 
   String categoriaSeleccionada = "Todos";
   String notasPreparacion = "";
-  
-  double get iva => subtotal * 0.16;
-  double get propina => subtotal * 0.1;
-  double get total => subtotal + iva + propina;
 
   // controla si los campos de configuración están en modo edición
   bool editConfig = false;
 
   List<String> get categorias => ref.watch(categoriasProvider);
   List<Producto> get productos => ref.watch(productosfiltradosProvider);
+  List<Setting> get configuraciones => ref.watch(settingProvider);
 
   final List<PedidoItem> carrito = [];
+
+  // Valores calculados
+  // double get iva => subtotal * 0.16;
+  double get iva => subtotal * configuraciones.firstWhere((s) => s.impuesto > 0, orElse: () => Setting(impuesto: 0, propina: 0, moneda: '', descuentos: false, redondearTotales: false, impresion: false)).impuesto / 100;
+  // double get propina => subtotal * 0.1;
+  double get propina => subtotal * configuraciones.firstWhere((s) => s.propina > 0, orElse: () => Setting(impuesto: 0, propina: 0, moneda: '', descuentos: false, redondearTotales: false, impresion: false)).propina / 100;
+  double get total => subtotal + iva + propina;
 
   List<Producto> get productosFiltrados {
     return productos.where((p) {
@@ -120,6 +129,7 @@ class _PedidoScreenState extends ConsumerState<PedidoScreen> {
     super.initState();
 
     Future.microtask(() {
+      usuarioId = TokenService.getUsuarioId();
       final dynamic mesa = ref.read(selectedTableProvider);
       final dynamic dataMesaOrder = ref.read(mesaSeleccionadaProvider);
 
@@ -145,8 +155,8 @@ class _PedidoScreenState extends ConsumerState<PedidoScreen> {
       mesaSeleccionada = mesa;
       mesaOrder = dataMesaOrder;
     });
-    print('Mesa seleccionada: ${mesa.number}');
-    print('Data Mesa seleccionada: ${dataMesaOrder.mesaId}');
+    // print('Mesa seleccionada: ${mesa.number}');
+    // print('Data Mesa seleccionada: ${dataMesaOrder.mesaId}');
   }
 
   @override
@@ -721,8 +731,8 @@ class _PedidoScreenState extends ConsumerState<PedidoScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _lineaTotal("Subtotal", subtotal),
-          _lineaTotal("IVA (16%)", iva),
-          _lineaTotal("Propina (10%)", propina),
+          _lineaTotal("IVA (${configuraciones.firstWhere((s) => s.impuesto > 0, orElse: () => Setting(impuesto: 0, propina: 0, moneda: '', descuentos: false, redondearTotales: false, impresion: false)).impuesto}%)", iva),
+          _lineaTotal("Propina (${configuraciones.firstWhere((s) => s.propina > 0, orElse: () => Setting(impuesto: 0, propina: 0, moneda: '', descuentos: false, redondearTotales: false, impresion: false)).propina}%)", propina),
           const SizedBox(height: 10),
           _lineaTotal("Total", total, esTotal: true),
           const SizedBox(height: 20),
@@ -735,7 +745,9 @@ class _PedidoScreenState extends ConsumerState<PedidoScreen> {
             ),
             onPressed: () {
               // Enviar pedido a cocina
-              _guardarPedido();
+              // _guardarPedido();
+              final payload = _cargarPedidoPayload();
+              modalConfirmarPedido(context, payload);
             },
             icon: const Icon(Icons.publish),
             label: const Text("Enviar a Cocina"),
@@ -771,49 +783,90 @@ class _PedidoScreenState extends ConsumerState<PedidoScreen> {
     );
   }
 
-
-  // Guardar pedido
-  Future<void> _guardarPedido() async {
-    // if (!_formKey.currentState!.validate()) return;
-    final provider = ref.read(orderProvider);
-
+  // Construir payload del pedido
+  Map<String, dynamic> _cargarPedidoPayload() {
     final payload = {
       "id": '',
-      "usuario_id": await TokenService.getUsuarioId(),
+      "usuario_id": usuarioId,
       "cliente_nombre": '',
       "cliente_documento": '',
       "mesa_id": mesaSeleccionada != null ? mesaSeleccionada.id : 'temp_table',
-      "comensales": mesaSeleccionada != null ? mesaSeleccionada.maximumCapacity : 0,
+      "nombre_mesa": mesaOrder != null ? mesaOrder.nombre : 'temp_table',
+      "numero_mesa": mesaOrder != null ? mesaOrder.number : 0,
+      "comensales": mesaOrder != null ? mesaOrder.comensales : 0,
       "productos": carrito.map((item) => {
         "producto_id": item.producto.id,
+        "nombre_producto": item.producto.nombre,
         "cantidad": item.cantidad,
         "precio": item.producto.precioDespuesImpuesto,
         "subTotal": item.producto.precioDespuesImpuesto * item.cantidad,
         "observacion": item.notasController.text.trim() == '' ? '' : item.notasController.text.trim(),
       }).toList(),
       "subtotal": subtotal,
-      "iva": iva,
+      "impuesto": iva,
       "propina": propina,
-      // "descuentos": descuentosController,
+      "descuento": 0,
       "total": total,
     };
+    // print("================== Payload del pedido =================");
+    // print("Payload del pedido: $payload");
+    // print("======================================================");
+    return payload;
+  }
 
-    final success = await provider.guardarPedidos(payload);
+  // // Guardar pedido
+  // Future<void> _guardarPedido() async {
+  //   // if (!_formKey.currentState!.validate()) return;
+  //   final provider = ref.read(orderProvider);
 
-    if (!mounted) return;
+  //   final payload = {
+  //     "id": '',
+  //     "usuario_id": await TokenService.getUsuarioId(),
+  //     "cliente_nombre": '',
+  //     "cliente_documento": '',
+  //     "mesa_id": mesaSeleccionada != null ? mesaSeleccionada.id : 'temp_table',
+  //     "nombre_mesa": mesaOrder != null ? mesaOrder.nombre : 'temp_table',
+  //     "comensales": mesaOrder != null ? mesaOrder.comensales : 0,
+  //     "productos": carrito.map((item) => {
+  //       "producto_id": item.producto.id,
+  //       "nombre_producto": item.producto.nombre,
+  //       "cantidad": item.cantidad,
+  //       "precio": item.producto.precioDespuesImpuesto,
+  //       "subTotal": item.producto.precioDespuesImpuesto * item.cantidad,
+  //       "observacion": item.notasController.text.trim() == '' ? '' : item.notasController.text.trim(),
+  //     }).toList(),
+  //     "subtotal": subtotal,
+  //     "impuesto": iva,
+  //     "propina": propina,
+  //     "descuento": 0,
+  //     "total": total,
+  //   };
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(success ? 'Pedido registrado correctamente' : provider.error ?? 'Error'),
-        backgroundColor: success ? Colors.green : Colors.red,
-      ),
+  //   final success = await provider.guardarPedidos(payload);
+
+  //   if (!mounted) return;
+
+  //   ScaffoldMessenger.of(context).showSnackBar(
+  //     SnackBar(
+  //       content: Text(success ? 'Pedido registrado correctamente' : provider.error ?? 'Error'),
+  //       backgroundColor: success ? Colors.green : Colors.red,
+  //     ),
+  //   );
+
+  //   if (success) {
+  //     editConfig = false;
+  //     setState(() {});
+  //   }
+
+  // }
+
+
+  Future<void> modalConfirmarPedido(BuildContext context, pedido) async {
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => ConfirmarPedidoModal(pedido: pedido),
     );
-
-    if (success) {
-      editConfig = false;
-      setState(() {});
-    }
-
   }
 
 

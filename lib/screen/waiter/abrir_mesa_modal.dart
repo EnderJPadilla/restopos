@@ -280,12 +280,6 @@ class _AbrirMesaModalState extends ConsumerState<AbrirMesaModal> {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
                   onPressed: () {
-                    // final nombres = controllers
-                    //   .map((c) => c.text.trim())
-                    //   .toList();
-
-                    // Navigator.pop(context, nombres);
-                    
                     final payload = tableOrders(
                       mesaId: widget.mesa.id,
                       number: widget.mesa.number,
@@ -294,6 +288,7 @@ class _AbrirMesaModalState extends ConsumerState<AbrirMesaModal> {
                     );
                     ref.read(mesaSeleccionadaProvider.notifier).state = payload;
                     context.go('/mesero/registrar_pedido');
+                    Navigator.of(context).pop();
                   },
                   icon: const Icon(Icons.login),
                   label: const Text("Abrir Mesa"),
