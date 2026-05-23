@@ -45,10 +45,10 @@ class OrdersService {
     try {
       final empresaId = await TokenService.getEmpresaId();
       final response = await _dio.post(
-        '/settings/guardar_pedidos',
+        '/pedidos/guardar_pedidos',
         data: {
           'empresa_id': empresaId,
-          'dataPedidos': payload
+          'dataPedido': payload
         },
       );
 

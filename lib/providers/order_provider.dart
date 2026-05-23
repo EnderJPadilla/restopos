@@ -66,8 +66,12 @@ class OrderProvider extends ChangeNotifier {
 
     try {
       final result = await OrdersService.guardarPedidos(payload);
-      final msg = extractMessage(result, rootKey: 'pedidos');
+      final msg = extractMessage(result, rootKey: 'pedido');
       if (msg != null && isErrorMessage(msg)) {
+        _error = msg;
+        return false;
+      }
+      if (msg != 'Pedido registrado correctamente') {
         _error = msg;
         return false;
       }

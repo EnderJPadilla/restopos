@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:restopos/core/services/token_service.dart';
 
 import 'package:restopos/core/utils/product_icon_mapper.dart';
 
@@ -778,14 +779,17 @@ class _PedidoScreenState extends ConsumerState<PedidoScreen> {
 
     final payload = {
       "id": '',
-      "mesaId": mesaSeleccionada != null ? mesaSeleccionada.id : 'temp_table',
+      "usuario_id": await TokenService.getUsuarioId(),
+      "cliente_nombre": '',
+      "cliente_documento": '',
+      "mesa_id": mesaSeleccionada != null ? mesaSeleccionada.id : 'temp_table',
       "comensales": mesaSeleccionada != null ? mesaSeleccionada.maximumCapacity : 0,
-      "items": carrito.map((item) => {
-        "productoId": item.producto.id,
+      "productos": carrito.map((item) => {
+        "producto_id": item.producto.id,
         "cantidad": item.cantidad,
         "precio": item.producto.precioDespuesImpuesto,
         "subTotal": item.producto.precioDespuesImpuesto * item.cantidad,
-        "notas": item.notasController.text.trim() == '' ? '' : item.notasController.text.trim(),
+        "observacion": item.notasController.text.trim() == '' ? '' : item.notasController.text.trim(),
       }).toList(),
       "subtotal": subtotal,
       "iva": iva,
@@ -800,7 +804,7 @@ class _PedidoScreenState extends ConsumerState<PedidoScreen> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(success ? 'Pedido guardado correctamente' : provider.error ?? 'Error'),
+        content: Text(success ? 'Pedido registrado correctamente' : provider.error ?? 'Error'),
         backgroundColor: success ? Colors.green : Colors.red,
       ),
     );
