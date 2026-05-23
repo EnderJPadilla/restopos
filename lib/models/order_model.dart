@@ -1,7 +1,7 @@
 class Order {
   final String id;
   final String mesaId;
-  final int numeroPersonas;
+  final int comensales;
   final List<OrderItem> items;
   final String estado;
   final double subtotal;
@@ -14,7 +14,7 @@ class Order {
     required this.id,
     required this.mesaId,
     required this.items,
-    required this.numeroPersonas,
+    required this.comensales,
     required this.estado,
     required this.subtotal,
     required this.propina,
@@ -26,7 +26,7 @@ class Order {
     String? id,
     String? mesaId,
     List<OrderItem>? items,
-    int? numeroPersonas,
+    int? comensales,
     String? estado,
     double? subtotal,
     double? propina,
@@ -37,7 +37,7 @@ class Order {
       id: id ?? this.id,
       mesaId: mesaId ?? this.mesaId,
       items: items ?? this.items,
-      numeroPersonas: numeroPersonas ?? this.numeroPersonas,
+      comensales: comensales ?? this.comensales,
       estado: estado ?? this.estado,
       subtotal: subtotal ?? this.subtotal,
       propina: propina ?? this.propina,
@@ -51,9 +51,9 @@ class Order {
       id: json['id'],
       mesaId: json['mesa_id'],
       items: (json['items'] as List)
-          .map((item) => OrderItem.fromJson(item))
-          .toList(),
-      numeroPersonas: json['numero_personas'],
+        .map((item) => OrderItem.fromJson(item))
+        .toList(),
+      comensales: json['numero_personas'],
       estado: json['estado'],
       subtotal: double.parse(json['subtotal'].toString()),
       propina: double.parse(json['propina'].toString()),
@@ -87,4 +87,18 @@ class OrderItem {
       total: double.parse(json['total'].toString()),
     );
   }
+}
+
+class tableOrders {
+  final String mesaId;
+  final int number;
+  final String nombre;
+  final int comensales;
+
+  tableOrders({
+    required this.mesaId,
+    required this.number,
+    required this.nombre,
+    required this.comensales,
+  });
 }

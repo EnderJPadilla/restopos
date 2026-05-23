@@ -8,12 +8,14 @@ import 'package:restopos/screen/waiter/order_screen.dart';
 
 class CartPage extends StatefulWidget {
   final TableModel mesa;
+  final dynamic mesaOrder;
   final List<PedidoItem> carrito;
   final void Function(int, int) cambiarCantidad;
 
   const CartPage({
     super.key,
     required this.mesa,
+    required this.mesaOrder,
     required this.carrito,
     required this.cambiarCantidad,
   });
@@ -198,7 +200,9 @@ class _CartPageState extends State<CartPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Mesa ${widget.mesa.number}',
+                widget.mesa.name != null && widget.mesa.name!.isNotEmpty 
+                  ? widget.mesa.name! 
+                  : 'Mesa ${widget.mesa.number}',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 18,
@@ -232,7 +236,7 @@ class _CartPageState extends State<CartPage> {
               Icon(Icons.group, color: Colors.white54),
               const SizedBox(width: 6),
               Text(
-                '${widget.mesa.maximumCapacity}',
+                '${widget.mesaOrder.comensales ?? 0} Comensales',
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,

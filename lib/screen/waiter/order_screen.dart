@@ -52,6 +52,8 @@ class _PedidoScreenState extends ConsumerState<PedidoScreen> {
 
   final TextEditingController searchController = TextEditingController();
   dynamic mesaSeleccionada = null;
+  dynamic mesaOrder = null;
+  // final dynamic mesaOrder = null;
 
   String categoriaSeleccionada = "Todos";
   String notasPreparacion = "";
@@ -118,14 +120,15 @@ class _PedidoScreenState extends ConsumerState<PedidoScreen> {
 
     Future.microtask(() {
       final dynamic mesa = ref.read(selectedTableProvider);
+      final dynamic dataMesaOrder = ref.read(mesaSeleccionadaProvider);
 
-      if (mesa == null) {
+      if (mesa == null || dataMesaOrder == null) {
         _resetForm();
         return;
       }
 
-      if (mesa != null) {
-        _cargarFrom(mesa);
+      if (mesa != null && dataMesaOrder != null && mesa.id == dataMesaOrder.mesaId) {
+        _cargarFrom(mesa, dataMesaOrder);
         return;
       }
     });
@@ -133,13 +136,16 @@ class _PedidoScreenState extends ConsumerState<PedidoScreen> {
 
   void _resetForm() {
     mesaSeleccionada = null;
+    mesaOrder = null;
   }
 
-  void _cargarFrom(mesa) {
+  void _cargarFrom(mesa, dataMesaOrder) {
     setState(() {
       mesaSeleccionada = mesa;
+      mesaOrder = dataMesaOrder;
     });
     print('Mesa seleccionada: ${mesa.number}');
+    print('Data Mesa seleccionada: ${dataMesaOrder.mesaId}');
   }
 
   @override
@@ -186,6 +192,7 @@ class _PedidoScreenState extends ConsumerState<PedidoScreen> {
                             activo: true,
                             booking: false
                           ),
+                        mesaOrder: mesaOrder,
                         carrito: carrito,
                         cambiarCantidad: cambiarCantidad,
                       ),
@@ -496,7 +503,10 @@ class _PedidoScreenState extends ConsumerState<PedidoScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Mesa ${mesaSeleccionada != null ? mesaSeleccionada.number : 'No Cargada'}',
+                // 'Mesa ${mesaSeleccionada != null ? mesaSeleccionada.number : 'No Cargada'}',
+                mesaSeleccionada.name != null && mesaSeleccionada.name!.isNotEmpty 
+                  ? mesaSeleccionada.name! 
+                  : 'Mesa ${mesaSeleccionada.number}',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 18,
@@ -530,7 +540,8 @@ class _PedidoScreenState extends ConsumerState<PedidoScreen> {
               Icon(Icons.group, color: Colors.white54),
               const SizedBox(width: 6),
               Text(
-                '${mesaSeleccionada != null ? mesaSeleccionada.maximumCapacity : 0}',
+                // '${mesaSeleccionada != null ? mesaSeleccionada.maximumCapacity : 0}',
+                '${mesaOrder.comensales ?? 0} Comensales',
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
@@ -768,11 +779,13 @@ class _PedidoScreenState extends ConsumerState<PedidoScreen> {
     final payload = {
       "id": '',
       "mesaId": mesaSeleccionada != null ? mesaSeleccionada.id : 'temp_table',
-      "numeroPersonas": mesaSeleccionada != null ? mesaSeleccionada.maximumCapacity : 0,
+      "comensales": mesaSeleccionada != null ? mesaSeleccionada.maximumCapacity : 0,
       "items": carrito.map((item) => {
         "productoId": item.producto.id,
         "cantidad": item.cantidad,
-        "notas": item.notasController.text.trim(),
+        "precio": item.producto.precioDespuesImpuesto,
+        "subTotal": item.producto.precioDespuesImpuesto * item.cantidad,
+        "notas": item.notasController.text.trim() == '' ? '' : item.notasController.text.trim(),
       }).toList(),
       "subtotal": subtotal,
       "iva": iva,

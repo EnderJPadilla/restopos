@@ -1,18 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:restopos/models/table_model.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-class AbrirMesaModal extends StatefulWidget {
+import 'package:restopos/providers/order_provider.dart';
+
+import 'package:restopos/models/order_model.dart';
+import 'package:restopos/models/table_model.dart';
+
+class AbrirMesaModal extends ConsumerStatefulWidget {
   final TableModel mesa;
 
   const AbrirMesaModal({super.key, required this.mesa});
 
   @override
-  State<AbrirMesaModal> createState() => _AbrirMesaModalState();
+  ConsumerState<AbrirMesaModal> createState() => _AbrirMesaModalState();
 }
 
-class _AbrirMesaModalState extends State<AbrirMesaModal> 
-    with TickerProviderStateMixin{
+class _AbrirMesaModalState extends ConsumerState<AbrirMesaModal> {
   int cantidad = 1;
   late List<TextEditingController> controllers;
   late List<bool> errores;
@@ -76,8 +80,7 @@ class _AbrirMesaModalState extends State<AbrirMesaModal>
 
     if (hayErrores) return;
 
-    final nombres =
-      controllers.map((c) => c.text.trim()).toList();
+    final nombres = controllers.map((c) => c.text.trim()).toList();
 
     Navigator.pop(context, nombres);
   }
@@ -170,7 +173,7 @@ class _AbrirMesaModalState extends State<AbrirMesaModal>
                   ),
                 ),
                 IconButton(
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () =>Navigator.pop(context),
                   icon: const Icon(Icons.close, color: Colors.white54),
                 )
               ],
@@ -282,6 +285,14 @@ class _AbrirMesaModalState extends State<AbrirMesaModal>
                     //   .toList();
 
                     // Navigator.pop(context, nombres);
+                    
+                    final payload = tableOrders(
+                      mesaId: widget.mesa.id,
+                      number: widget.mesa.number,
+                      nombre: widget.mesa.name ?? '',
+                      comensales: cantidad,
+                    );
+                    ref.read(mesaSeleccionadaProvider.notifier).state = payload;
                     context.go('/mesero/registrar_pedido');
                   },
                   icon: const Icon(Icons.login),
@@ -309,4 +320,6 @@ class _AbrirMesaModalState extends State<AbrirMesaModal>
       ),
     );
   }
+
+
 }

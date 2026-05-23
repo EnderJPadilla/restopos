@@ -4,6 +4,8 @@ import 'package:restopos/core/services/order_service.dart';
 import 'package:restopos/core/utils/response_validator.dart';
 import '../models/order_model.dart';
 
+// Mesa seleccionada para pedido
+final mesaSeleccionadaProvider = StateProvider<tableOrders?>((ref) => null);
 
 // Pedido seleccionado para pedido
 final selectedOrderProvider = StateProvider<Order?>((ref) => null);
