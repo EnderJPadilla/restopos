@@ -53,7 +53,7 @@ class Order {
       items: (json['items'] as List)
         .map((item) => OrderItem.fromJson(item))
         .toList(),
-      comensales: json['numero_personas'],
+      comensales: json['comensales'],
       estado: json['estado'],
       subtotal: double.parse(json['subtotal'].toString()),
       propina: double.parse(json['propina'].toString()),
@@ -69,6 +69,7 @@ class OrderItem {
   final int cantidad;
   final double precioUnitario;
   final double total;
+  final String observaciones;
 
   OrderItem({
     required this.id,
@@ -76,6 +77,7 @@ class OrderItem {
     required this.cantidad,
     required this.precioUnitario,
     required this.total,
+    required this.observaciones,
   });
 
   factory OrderItem.fromJson(Map<String, dynamic> json) {
@@ -85,6 +87,7 @@ class OrderItem {
       cantidad: json['cantidad'],
       precioUnitario: double.parse(json['precio_unitario'].toString()),
       total: double.parse(json['total'].toString()),
+      observaciones: json['observaciones'] ?? '',
     );
   }
 }

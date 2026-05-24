@@ -8,6 +8,7 @@ import 'package:restopos/providers/table_provider.dart';
 
 import 'package:restopos/screen/waiter/abrir_mesa_modal.dart';
 import 'package:restopos/screen/waiter/confirmar_pedido_modal.dart';
+import 'package:restopos/screen/waiter/table_order_view.dart';
 import 'package:restopos/widget/live_order_time.dart';
 
 class AppColors {
@@ -311,7 +312,54 @@ class TableCard extends ConsumerWidget {
           // Guardar mesa seleccionada
           ref.read(selectedTableProvider.notifier).state = table;
           if (table.status == TableStatus.disponible) mostrarModalAbrirMesa(context, table);
-          if (table.status == TableStatus.ocupada) modalConfirmarPedido(context, table);
+          if (table.status == TableStatus.ocupada) {
+            final datos = table.pedido != null
+              ? {
+                  "mesa_id": table.id,
+                  "numero": table.number,
+                  "nombre": table.name,
+                  "activo": table.activo,
+                  "estatus": table.status == TableStatus.disponible
+                    ? "disponible"
+                    : table.status == TableStatus.ocupada
+                      ? "ocupada"
+                      : "reservada",
+                  "capacidad": table.maximumCapacity,
+                  "reservas": table.booking,
+                  "pedido_activo": table.pedido != null
+                    ? {
+                        "id": table.pedido![0]['id'],
+                        "mesa_id": table.id,
+                        "nombre_usuario": table.pedido![0]['nombre_usuario'],
+                        "comensales": table.pedido![0]['comensales'],
+                        "items":
+                          (table.pedido![0]['items'] as List)
+                          .map((item) => {
+                            "id": item['id'].toString(),
+                            "nombre": item['nombre'],
+                            "cantidad": item['cantidad'],
+                            "precio_unitario": item['precio_unitario'],
+                            "total": item['total'],
+                            "observaciones": item['observaciones'] ?? '',
+                          })
+                          .toList(),
+                        "estado": table.pedido![0]['estado'],
+                        "subtotal": table.pedido![0]['subtotal'],
+                        "iva": table.pedido![0]['impuesto_valor'],
+                        "propina": table.pedido![0]['propina_valor'],
+                        "descuento": table.pedido![0]['descuento_valor'],
+                        "total": table.pedido![0]['total'],
+                        "created_at": table.pedido![0]['created_at'],
+                      }
+                    : {},
+                  "numero_pedido": 6,
+                  "estado": "Abierto",
+                  "usuario_id": "8d28ce62-199a-4c99-82af-04c2bdad3681",
+                }
+              : null;
+
+            detallePedido(context, datos);
+          }
         },
         child: Container(
           padding: const EdgeInsets.all(16),
@@ -400,11 +448,11 @@ Future<void> mostrarModalAbrirMesa(BuildContext context, TableModel mesa) async 
 }
 
 
-Future<void> modalConfirmarPedido(BuildContext context, pedido) async {
+Future<void> detallePedido(BuildContext context, datos) async {
   await showDialog(
     context: context,
     barrierDismissible: false,
-    builder: (_) => ConfirmarPedidoModal(pedido: pedido),
+    builder: (_) => TableOrderView(dataPedido: datos),
   );
 }
 

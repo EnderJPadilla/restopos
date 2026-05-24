@@ -58,6 +58,7 @@ class _PedidoScreenState extends ConsumerState<PedidoScreen> {
   final TextEditingController searchController = TextEditingController();
   dynamic mesaSeleccionada = null;
   dynamic mesaOrder = null;
+  dynamic dataPedidoActivo = null;
   dynamic usuarioId = null;
   // dynamic configuraciones = null;
 
@@ -74,9 +75,7 @@ class _PedidoScreenState extends ConsumerState<PedidoScreen> {
   final List<PedidoItem> carrito = [];
 
   // Valores calculados
-  // double get iva => subtotal * 0.16;
   double get iva => subtotal * configuraciones.firstWhere((s) => s.impuesto > 0, orElse: () => Setting(impuesto: 0, propina: 0, moneda: '', descuentos: false, redondearTotales: false, impresion: false)).impuesto / 100;
-  // double get propina => subtotal * 0.1;
   double get propina => subtotal * configuraciones.firstWhere((s) => s.propina > 0, orElse: () => Setting(impuesto: 0, propina: 0, moneda: '', descuentos: false, redondearTotales: false, impresion: false)).propina / 100;
   double get total => subtotal + iva + propina;
 
@@ -132,6 +131,12 @@ class _PedidoScreenState extends ConsumerState<PedidoScreen> {
       usuarioId = TokenService.getUsuarioId();
       final dynamic mesa = ref.read(selectedTableProvider);
       final dynamic dataMesaOrder = ref.read(mesaSeleccionadaProvider);
+      final dynamic dataPedido = ref.read(selectedOrderProvider);
+
+      print('==================================================');
+      print('Data Pedido Activo desde provider: $dataPedido');
+      print('==================================================');
+      
 
       if (mesa == null || dataMesaOrder == null) {
         _resetForm();
@@ -142,12 +147,19 @@ class _PedidoScreenState extends ConsumerState<PedidoScreen> {
         _cargarFrom(mesa, dataMesaOrder);
         return;
       }
+
+      if (dataPedido != null && dataPedido.mesaId == mesa.id) {
+        _cargarDataPedido(dataPedido);
+        return;
+      }
+
     });
   }
 
   void _resetForm() {
     mesaSeleccionada = null;
     mesaOrder = null;
+    dataPedidoActivo = null;
   }
 
   void _cargarFrom(mesa, dataMesaOrder) {
@@ -157,6 +169,12 @@ class _PedidoScreenState extends ConsumerState<PedidoScreen> {
     });
     // print('Mesa seleccionada: ${mesa.number}');
     // print('Data Mesa seleccionada: ${dataMesaOrder.mesaId}');
+  }
+
+  void _cargarDataPedido(Order dataPedido) {
+    setState(() {
+      dataPedidoActivo = dataPedido;
+    });
   }
 
   @override
@@ -730,11 +748,11 @@ class _PedidoScreenState extends ConsumerState<PedidoScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _lineaTotal("Subtotal", subtotal),
-          _lineaTotal("IVA (${configuraciones.firstWhere((s) => s.impuesto > 0, orElse: () => Setting(impuesto: 0, propina: 0, moneda: '', descuentos: false, redondearTotales: false, impresion: false)).impuesto}%)", iva),
-          _lineaTotal("Propina (${configuraciones.firstWhere((s) => s.propina > 0, orElse: () => Setting(impuesto: 0, propina: 0, moneda: '', descuentos: false, redondearTotales: false, impresion: false)).propina}%)", propina),
+          _lineaTotal("Subtotal", dataPedidoActivo == null ? subtotal : dataPedidoActivo.subtotal),
+          _lineaTotal("IVA (${configuraciones.firstWhere((s) => s.impuesto > 0, orElse: () => Setting(impuesto: 0, propina: 0, moneda: '', descuentos: false, redondearTotales: false, impresion: false)).impuesto}%)", dataPedidoActivo == null ? iva : dataPedidoActivo.iva),
+          _lineaTotal("Propina (${configuraciones.firstWhere((s) => s.propina > 0, orElse: () => Setting(impuesto: 0, propina: 0, moneda: '', descuentos: false, redondearTotales: false, impresion: false)).propina}%)", dataPedidoActivo == null ? propina : dataPedidoActivo.propina),
           const SizedBox(height: 10),
-          _lineaTotal("Total", total, esTotal: true),
+          _lineaTotal("Total", dataPedidoActivo == null ? total : dataPedidoActivo.total, esTotal: true),
           const SizedBox(height: 20),
           ElevatedButton.icon(
             style: ElevatedButton.styleFrom(
