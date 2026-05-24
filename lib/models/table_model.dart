@@ -10,7 +10,7 @@ class TableModel {
   final TableStatus status;
   final bool activo;
   final bool booking;
-  final List<Order>? pedido;
+  final List<dynamic>? pedido;
 
   TableModel({
     required this.id,
@@ -31,7 +31,7 @@ class TableModel {
     TableStatus? status,
     bool? activo,
     bool? booking,
-    List<Order>? pedido,
+    List<dynamic>? pedido,
   }) {
     return TableModel(
       id: id ?? this.id,
@@ -67,8 +67,8 @@ class TableModel {
       activo: json["activo"] ?? false,
       booking: json["booking"] ?? false,
       pedido: json["pedido_activo"] != null
-        ? (json["pedido_activo"] as List).map((e) => Order.fromJson(e)).toList()
-        : null
+        ? [json["pedido_activo"]]
+        : null,
     );
   }
 

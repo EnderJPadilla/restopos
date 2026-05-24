@@ -7,6 +7,8 @@ import 'package:restopos/providers/order_provider.dart';
 import 'package:restopos/providers/table_provider.dart';
 
 import 'package:restopos/screen/waiter/abrir_mesa_modal.dart';
+import 'package:restopos/screen/waiter/confirmar_pedido_modal.dart';
+import 'package:restopos/widget/live_order_time.dart';
 
 class AppColors {
   static const background =  Color(0xFF05080B);
@@ -308,7 +310,8 @@ class TableCard extends ConsumerWidget {
         onTap: () {
           // Guardar mesa seleccionada
           ref.read(selectedTableProvider.notifier).state = table;
-          mostrarModalAbrirMesa(context, table);
+          if (table.status == TableStatus.disponible) mostrarModalAbrirMesa(context, table);
+          if (table.status == TableStatus.ocupada) modalConfirmarPedido(context, table);
         },
         child: Container(
           padding: const EdgeInsets.all(16),
@@ -357,28 +360,28 @@ class TableCard extends ConsumerWidget {
                     ),
                     child: Center(
                       child: Text(
-                        table.pedido != null ? table.pedido![0].estado : "Reservada",
+                        table.pedido != null ? table.pedido![0]['estado'] : "Reservada",
                         style: TextStyle(color: borderColor, fontSize: 12),
                       ),
                     )
                   ),
                 ),
+
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.access_time,
+                      size: 14, color: Colors.white38
+                    ),
+                    const SizedBox(width: 4),
+                    LiveOrderTime(
+                      createdAt: table.pedido![0]['created_at'],
+                    ),
+                  ],
+                ),
               ],
-              // if (table.status == TableStatus.reservada) ...[
-              //   const SizedBox(height: 8),
-              //   Row(
-              //     mainAxisAlignment: MainAxisAlignment.center,
-              //     children: [
-              //       const Icon(Icons.access_time,
-              //         size: 14, color: Colors.white38),
-              //       const SizedBox(width: 4),
-              //       Text(
-              //         table.time!,
-              //         style: const TextStyle(color: Colors.white38, fontSize: 12),
-              //       )
-              //     ],
-              //   )
-              // ]
             ],
           ),
         ),
@@ -387,6 +390,7 @@ class TableCard extends ConsumerWidget {
   }
 }
 
+
 Future<void> mostrarModalAbrirMesa(BuildContext context, TableModel mesa) async {
   await showDialog(
     context: context,
@@ -394,3 +398,13 @@ Future<void> mostrarModalAbrirMesa(BuildContext context, TableModel mesa) async 
     builder: (_) => AbrirMesaModal(mesa: mesa),
   );
 }
+
+
+Future<void> modalConfirmarPedido(BuildContext context, pedido) async {
+  await showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (_) => ConfirmarPedidoModal(pedido: pedido),
+  );
+}
+
